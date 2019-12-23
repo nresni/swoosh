@@ -1,4 +1,6 @@
 defmodule Swoosh.Adapters.Mailjet do
+  require Logger
+
   @moduledoc ~S"""
   An adapter that sends email using the Mailjet API.
 
@@ -40,7 +42,7 @@ defmodule Swoosh.Adapters.Mailjet do
         {:ok, %{id: get_message_id(body)}}
 
       {:ok, error_code, _headers, body} when error_code >= 400 ->
-        {:error, {error_code, Swoosh.json_library().decode!(body)}}
+        {:error, {error_code, format_error_msg(body)}}
 
       {:error, reason} ->
         {:error, reason}
@@ -210,4 +212,14 @@ defmodule Swoosh.Adapters.Mailjet do
   end
 
   defp prepare_template(body, _email), do: body
+
+  defp format_error_msg(body) do
+    with {:ok, error} <- Swoosh.json_library().decode!(body) do
+      error
+    else
+      {:error, decode_error_msg} ->
+        Logger.error(fn -> inspect(decode_error_msg) end)
+        body
+    end
+  end
 end
