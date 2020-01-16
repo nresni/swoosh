@@ -214,11 +214,11 @@ defmodule Swoosh.Adapters.Mailjet do
   defp prepare_template(body, _email), do: body
 
   defp format_error_msg(body) do
-    with {:ok, error} <- Swoosh.json_library().decode!(body) do
+    with {:ok, error} <- Swoosh.json_library().decode(body) do
       error
     else
       {:error, decode_error_msg} ->
-        Logger.error(fn -> inspect(decode_error_msg) end)
+        Logger.error(fn -> inspect(body) end)
         body
     end
   end
